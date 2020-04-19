@@ -86,10 +86,17 @@ const layout_0 = {
     xaxis: {
         range: [range.xmin, 0.01],
         // rangeslider: { range: [range.xmin, range.xmax] },
+        showspikes: true,
+        spikemode: "across",
+        spikedash: "solid",
+        spikecolor: "#000000",
+        spikethickness: 0.1
     },
     yaxis: {
         fixedrange: true
-    }
+    },
+    spikedistance: 200,
+    hoverdistance: 10,
 };
 
 const layout_1 = {
@@ -108,9 +115,9 @@ const layout_1 = {
 };
 
 
-Plotly.plot(cpu0, plotData, layout_0, { scrollZoom: true })
+Plotly.newPlot(cpu0, plotData, layout_0, { scrollZoom: true })
 
-Plotly.plot(cpu1, plotData1, layout_1, { scrollZoom: true })
+Plotly.newPlot(cpu1, plotData1, layout_1, { scrollZoom: true })
 
 cores.forEach(core => {
     core.on("plotly_relayout", function (data) {
@@ -119,7 +126,7 @@ cores.forEach(core => {
 });
 
 function rangeLayout(el) {
-    if (el.dragmode) {
+    if (el.hasOwnProperty("dragmode") || el.hasOwnProperty("hovermode") || el.hasOwnProperty("xaxis.showspikes") || el.hasOwnProperty("yaxis.showspikes")) {
         return;
     }
     cores.forEach(core => {
