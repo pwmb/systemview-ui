@@ -1,3 +1,7 @@
+const cpu0 = document.getElementById("cpu0");
+const cpu1 = document.getElementById("cpu1");
+
+const cores = [cpu0, cpu1];
 
 const lookupTable = {};
 
@@ -73,14 +77,29 @@ Object.keys(CPU_1.irq).forEach(irq => {
     plotData1.push(CPU_1.irq[irq])
 })
 
-const layout = {
+const layout_0 = {
     title: 'CPU CORE 0',
     height: 300,
     hovermode: 'closest',
     showlegend: true,
     dragmode: "pan",
     xaxis: {
-        range: [range.xmin, range.xmax],
+        range: [range.xmin, 0.01],
+        // rangeslider: { range: [range.xmin, range.xmax] },
+    },
+    yaxis: {
+        fixedrange: true
+    }
+};
+
+const layout_1 = {
+    title: 'CPU CORE 1',
+    height: 300,
+    hovermode: 'closest',
+    showlegend: true,
+    dragmode: "pan",
+    xaxis: {
+        range: [range.xmin, 0.01],
         // rangeslider: { range: [range.xmin, range.xmax] },
     },
     yaxis: {
@@ -89,5 +108,24 @@ const layout = {
 };
 
 
-Plotly.plot('graph', plotData, layout, { scrollZoom: true })
-Plotly.plot('graph1', plotData1, layout, { scrollZoom: true })
+Plotly.plot(cpu0, plotData, layout_0, { scrollZoom: true })
+
+Plotly.plot(cpu1, plotData1, layout_1, { scrollZoom: true })
+
+cores.forEach(core => {
+    core.on("plotly_relayout", function (data) {
+        rangeLayout(data);
+    });
+});
+
+function rangeLayout(el) {
+    if (el.dragmode) {
+        return;
+    }
+    cores.forEach(core => {
+        let x = core.layout.xaxis;
+        if (el["xaxis.autorange"] && x.autorange) return;
+        if (x.range[0] != el["xaxis.range[0]"] || x.range[1] != el["xaxis.range[1]"])
+            Plotly.relayout(core, el);
+    })
+}
