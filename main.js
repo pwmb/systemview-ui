@@ -65,7 +65,7 @@ Object.keys(CPU_0.irq).forEach(irq => {
 
 const plotData1 = []
 
-const CPU_1 = lookupTable[0]
+const CPU_1 = lookupTable[1]
 Object.keys(CPU_1.ctx).forEach(ctx => {
     plotData1.push(CPU_1.ctx[ctx])
 })
