@@ -1,7 +1,4 @@
-const cpu0 = document.getElementById("cpu0");
-const cpu1 = document.getElementById("cpu1");
-
-const cores = [cpu0, cpu1];
+const plot = document.getElementById("plot");
 
 const lookupTable = {};
 
@@ -24,64 +21,52 @@ mcore.events.forEach(evt => {
         range.xmin = evt.ts;
     }
 
-    if (evt.in_irq && evt.in_irq === true && !lookupTable[evt.core_id].irq[evt.ctx_name]) {
+    if (evt.in_irq === true && !lookupTable[evt.core_id].irq.hasOwnProperty(evt.ctx_name)) {
         lookupTable[evt.core_id].irq[evt.ctx_name] = {}
-    } else {
+    } else if (evt.in_irq === false && !lookupTable[evt.core_id].ctx.hasOwnProperty(evt.ctx_name)) {
         lookupTable[evt.core_id].ctx[evt.ctx_name] = {}
     }
 });
 
 mcore.events.forEach((evt, index) => {
+    if (mcore.events.length - 1 === index) {
+        return;
+    }
     let data = lookupTable[evt.core_id].ctx[evt.ctx_name];
     if (evt.in_irq === true) {
         data = lookupTable[evt.core_id].irq[evt.ctx_name];
     }
     if (!data.type) {
-        data.type = "bar"
-        data.orientation = "h"
+        data.type = "scattergl"
+        data.mode = "lines"
+        // data.opacity = 0.9
+        data.line = { width: 20 }
         data.name = evt.in_irq === true ? `IRQ: ${evt.ctx_name}` : evt.ctx_name
+        // if (evt.core_id === 1) {
+        //     data.yaxis = "y1"
+        // }
         data.y = []
         data.x = []
-        data.base = []
     }
-    if (evt.in_irq === true) {
-        data.y.push("IRQ");
-    } else {
-        data.y.push("CTX");
-    }
-    data.base.push(evt.ts)
-    if (mcore.events.length - 1 === index) {
-        data.x.push(0)
-    } else {
-        data.x.push(mcore.events[index + 1].ts - evt.ts)
-    }
+    data.x.push(evt.ts, mcore.events[index + 1].ts, null);
+    data.y.push(data.name, data.name, data.name);
 })
 
 const plotData = []
 
-const CPU_0 = lookupTable[0]
-Object.keys(CPU_0.ctx).forEach(ctx => {
-    plotData.push(CPU_0.ctx[ctx])
+// Object.keys(lookupTable).forEach(coreId => {
+const cpuCore = lookupTable[0]
+Object.keys(cpuCore.ctx).forEach(ctx => {
+    plotData.push(cpuCore.ctx[ctx])
 })
-Object.keys(CPU_0.irq).forEach(irq => {
-    plotData.push(CPU_0.irq[irq])
+Object.keys(cpuCore.irq).forEach(irq => {
+    plotData.push(cpuCore.irq[irq])
 })
+// })
 
-const plotData1 = []
-
-const CPU_1 = lookupTable[1]
-Object.keys(CPU_1.ctx).forEach(ctx => {
-    plotData1.push(CPU_1.ctx[ctx])
-})
-Object.keys(CPU_1.irq).forEach(irq => {
-    plotData1.push(CPU_1.irq[irq])
-})
-
-const layout_0 = {
-    title: 'CPU CORE 0',
-    height: 300,
+const layout = {
     hovermode: 'closest',
-    showlegend: true,
+    showlegend: false,
     dragmode: "pan",
     xaxis: {
         range: [range.xmin, 0.01],
@@ -90,49 +75,22 @@ const layout_0 = {
         spikemode: "across",
         spikedash: "solid",
         spikecolor: "#000000",
-        spikethickness: 0.1
+        spikethickness: 0.5
     },
     yaxis: {
-        fixedrange: true
+        fixedrange: true,
+        showgrid: false,
+        zeroline: false,
+        showline: false,
     },
     spikedistance: 200,
     hoverdistance: 10,
-};
-
-const layout_1 = {
-    title: 'CPU CORE 1',
-    height: 300,
-    hovermode: 'closest',
-    showlegend: true,
-    dragmode: "pan",
-    xaxis: {
-        range: [range.xmin, 0.01],
-        // rangeslider: { range: [range.xmin, range.xmax] },
-    },
-    yaxis: {
-        fixedrange: true
-    }
+    // grid: {
+    //     rows: 2,
+    //     columns: 1,
+    //     subplots: [["xy", "xy1"]],
+    // }
 };
 
 
-Plotly.newPlot(cpu0, plotData, layout_0, { scrollZoom: true })
-
-Plotly.newPlot(cpu1, plotData1, layout_1, { scrollZoom: true })
-
-cores.forEach(core => {
-    core.on("plotly_relayout", function (data) {
-        rangeLayout(data);
-    });
-});
-
-function rangeLayout(el) {
-    if (el.hasOwnProperty("dragmode") || el.hasOwnProperty("hovermode") || el.hasOwnProperty("xaxis.showspikes") || el.hasOwnProperty("yaxis.showspikes")) {
-        return;
-    }
-    cores.forEach(core => {
-        let x = core.layout.xaxis;
-        if (el["xaxis.autorange"] && x.autorange) return;
-        if (x.range[0] != el["xaxis.range[0]"] || x.range[1] != el["xaxis.range[1]"])
-            Plotly.relayout(core, el);
-    })
-}
+Plotly.plot(plot, plotData, layout, { scrollZoom: true })
