@@ -4,6 +4,7 @@ const plotData = [];
 const lookupTable = {};
 
 const layout = {
+    height: 700,
     hovermode: 'closest',
     showlegend: false,
     dragmode: "pan",
@@ -17,6 +18,14 @@ const layout = {
         spikethickness: 0.5
     },
     yaxis: {
+        title: "Core 0",
+        fixedrange: true,
+        showgrid: false,
+        zeroline: false,
+        showline: false,
+    },
+    yaxis2: {
+        title: "Core 1",
         fixedrange: true,
         showgrid: false,
         zeroline: false,
@@ -24,22 +33,24 @@ const layout = {
     },
     spikedistance: 200,
     hoverdistance: 10,
-    // grid: {
-    //     rows: 2,
-    //     columns: 1,
-    //     subplots: [["xy", "xy1"]],
-    // }
+    grid: {
+        rows: 2,
+        columns: 1,
+        subplots: [['xy'], ['xy2']],
+    }
 };
 
 rendering.addEventListener("click", () => {
-    plotData.forEach(data => {
-        if (data.type === "scattergl") {
-            data.type = "scatter"
-        } else {
-            data.type = "scattergl"
-        }
-    });
-    Plotly.react(plot, plotData, layout);
+    setTimeout(() => {
+        plotData.forEach(data => {
+            if (data.type === "scattergl") {
+                data.type = "scatter"
+            } else {
+                data.type = "scattergl"
+            }
+        });
+        Plotly.react(plot, plotData, layout);
+    }, 0);
 })
 
 let range = {
@@ -82,9 +93,10 @@ mcore.events.forEach((evt, index) => {
         // data.opacity = 0.9
         data.line = { width: 20 }
         data.name = evt.in_irq === true ? `IRQ: ${evt.ctx_name}` : evt.ctx_name
-        // if (evt.core_id === 1) {
-        //     data.yaxis = "y1"
-        // }
+        if (evt.core_id === 1) {
+            data.yaxis = "y2"
+            data.xaxis = "x"
+        }
         data.y = []
         data.x = []
     }
@@ -92,15 +104,15 @@ mcore.events.forEach((evt, index) => {
     data.y.push(data.name, data.name, data.name);
 })
 
-// Object.keys(lookupTable).forEach(coreId => {
-const cpuCore = lookupTable[0]
-Object.keys(cpuCore.ctx).forEach(ctx => {
-    plotData.push(cpuCore.ctx[ctx])
+Object.keys(lookupTable).forEach(coreId => {
+    const cpuCore = lookupTable[coreId]
+    Object.keys(cpuCore.ctx).forEach(ctx => {
+        plotData.push(cpuCore.ctx[ctx])
+    })
+    Object.keys(cpuCore.irq).forEach(irq => {
+        plotData.push(cpuCore.irq[irq])
+    })
 })
-Object.keys(cpuCore.irq).forEach(irq => {
-    plotData.push(cpuCore.irq[irq])
-})
-// })
 
 
 Plotly.plot(plot, plotData, layout, { scrollZoom: true })
