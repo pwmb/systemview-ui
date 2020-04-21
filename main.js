@@ -1,6 +1,46 @@
 const plot = document.getElementById("plot");
-
+const rendering = document.getElementById("switch");
+const plotData = [];
 const lookupTable = {};
+
+const layout = {
+    hovermode: 'closest',
+    showlegend: false,
+    dragmode: "pan",
+    xaxis: {
+        range: [0, 0.01],
+        // rangeslider: { range: [range.xmin, range.xmax] },
+        showspikes: true,
+        spikemode: "across",
+        spikedash: "solid",
+        spikecolor: "#000000",
+        spikethickness: 0.5
+    },
+    yaxis: {
+        fixedrange: true,
+        showgrid: false,
+        zeroline: false,
+        showline: false,
+    },
+    spikedistance: 200,
+    hoverdistance: 10,
+    // grid: {
+    //     rows: 2,
+    //     columns: 1,
+    //     subplots: [["xy", "xy1"]],
+    // }
+};
+
+rendering.addEventListener("click", () => {
+    plotData.forEach(data => {
+        if (data.type === "scattergl") {
+            data.type = "scatter"
+        } else {
+            data.type = "scattergl"
+        }
+    });
+    Plotly.react(plot, plotData, layout);
+})
 
 let range = {
     xmin: Number.MAX_SAFE_INTEGER,
@@ -52,8 +92,6 @@ mcore.events.forEach((evt, index) => {
     data.y.push(data.name, data.name, data.name);
 })
 
-const plotData = []
-
 // Object.keys(lookupTable).forEach(coreId => {
 const cpuCore = lookupTable[0]
 Object.keys(cpuCore.ctx).forEach(ctx => {
@@ -63,34 +101,6 @@ Object.keys(cpuCore.irq).forEach(irq => {
     plotData.push(cpuCore.irq[irq])
 })
 // })
-
-const layout = {
-    hovermode: 'closest',
-    showlegend: false,
-    dragmode: "pan",
-    xaxis: {
-        range: [range.xmin, 0.01],
-        // rangeslider: { range: [range.xmin, range.xmax] },
-        showspikes: true,
-        spikemode: "across",
-        spikedash: "solid",
-        spikecolor: "#000000",
-        spikethickness: 0.5
-    },
-    yaxis: {
-        fixedrange: true,
-        showgrid: false,
-        zeroline: false,
-        showline: false,
-    },
-    spikedistance: 200,
-    hoverdistance: 10,
-    // grid: {
-    //     rows: 2,
-    //     columns: 1,
-    //     subplots: [["xy", "xy1"]],
-    // }
-};
 
 
 Plotly.plot(plot, plotData, layout, { scrollZoom: true })
