@@ -62,7 +62,8 @@ mcore.events.forEach(evt => {
     if (!lookupTable[evt.core_id]) {
         lookupTable[evt.core_id] = {
             irq: {},
-            ctx: {}
+            ctx: {},
+            lastEvent: null
         };
     }
     if (evt.ts >= range.xmax) {
@@ -80,9 +81,6 @@ mcore.events.forEach(evt => {
 });
 
 mcore.events.forEach((evt, index) => {
-    if (mcore.events.length - 1 === index) {
-        return;
-    }
     let data = lookupTable[evt.core_id].ctx[evt.ctx_name];
     if (evt.in_irq === true) {
         data = lookupTable[evt.core_id].irq[evt.ctx_name];
@@ -90,7 +88,7 @@ mcore.events.forEach((evt, index) => {
     if (!data.type) {
         data.type = "scattergl"
         data.mode = "lines"
-        // data.opacity = 0.9
+        data.opacity = 0.9
         data.line = { width: 20 }
         data.name = evt.in_irq === true ? `IRQ: ${evt.ctx_name}` : evt.ctx_name
         if (evt.core_id === 1) {
@@ -100,8 +98,12 @@ mcore.events.forEach((evt, index) => {
         data.y = []
         data.x = []
     }
-    data.x.push(evt.ts, mcore.events[index + 1].ts, null);
-    data.y.push(data.name, data.name, data.name);
+    if (lookupTable[evt.core_id].lastEvent !== null) {
+        const previousEvt = lookupTable[evt.core_id].lastEvent;
+        data.x.push(previousEvt.ts, evt.ts, null);
+        data.y.push(data.name, data.name, data.name);
+    }
+    lookupTable[evt.core_id].lastEvent = evt;
 })
 
 Object.keys(lookupTable).forEach(coreId => {
