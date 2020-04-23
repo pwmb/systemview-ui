@@ -3,11 +3,43 @@ const rendering = document.getElementById("switch");
 const plotData = [];
 const lookupTable = {};
 
+const IGNORE_RENDER_SYS_STREAM_LIST = [
+    "SYS_IDLE",
+    "SYS_INIT",
+    "SYS_MODULEDESC",
+    "SYS_NAME_RESOURCE",
+    "SYS_NOP",
+    "SYS_NUMMODULES",
+    "SYS_STACK_INFO",
+    "SYS_SYSDESC",
+    "SYS_SYSTIME_CYCLES",
+    "SYS_SYSTIME_US",
+    "SYS_TRACE_START",
+    "SYS_TRACE_STOP",
+    "SYS_TASK_INFO"
+]
+
+const IGNORE_RENDER_SYS_STREAM_ID_LIST = IGNORE_RENDER_SYS_STREAM_LIST.map(name => mcore.streams.system[name])
+
 const layout = {
     height: 700,
     hovermode: 'closest',
     showlegend: false,
     dragmode: "pan",
+    shapes: [{
+        // type: 'line',
+        // xref: "x",
+        // yref: "y2",
+        // x0: 0.002789875,
+        // y0: "IDLE1",
+        // x1: 0.002789875,
+        // y1: "IRQ: SysTick",
+        // opacity: 0.5,
+        // line: {
+        //     color: 'blue',
+        //     width: 0.5
+        // }
+    }],
     xaxis: {
         range: [0, 0.01],
         // rangeslider: { range: [range.xmin, range.xmax] },
@@ -73,10 +105,15 @@ mcore.events.forEach(evt => {
         range.xmin = evt.ts;
     }
 
+    let canRender = true;
+    if (IGNORE_RENDER_SYS_STREAM_ID_LIST.includes(evt.id)) {
+        canRender = false;
+    }
+
     if (evt.in_irq === true && !lookupTable[evt.core_id].irq.hasOwnProperty(evt.ctx_name)) {
-        lookupTable[evt.core_id].irq[evt.ctx_name] = {}
+        lookupTable[evt.core_id].irq[evt.ctx_name] = { canRender }
     } else if (evt.in_irq === false && !lookupTable[evt.core_id].ctx.hasOwnProperty(evt.ctx_name)) {
-        lookupTable[evt.core_id].ctx[evt.ctx_name] = {}
+        lookupTable[evt.core_id].ctx[evt.ctx_name] = { canRender }
     }
 });
 
@@ -84,6 +121,9 @@ mcore.events.forEach((evt, index) => {
     let data = lookupTable[evt.core_id].ctx[evt.ctx_name];
     if (evt.in_irq === true) {
         data = lookupTable[evt.core_id].irq[evt.ctx_name];
+    }
+    if (data.canRender === false) {
+        return;
     }
     if (!data.type) {
         data.type = "scattergl"
@@ -109,10 +149,14 @@ mcore.events.forEach((evt, index) => {
 Object.keys(lookupTable).forEach(coreId => {
     const cpuCore = lookupTable[coreId]
     Object.keys(cpuCore.ctx).forEach(ctx => {
-        plotData.push(cpuCore.ctx[ctx])
+        if (cpuCore.ctx[ctx].canRender === true) {
+            plotData.push(cpuCore.ctx[ctx])
+        }
     })
     Object.keys(cpuCore.irq).forEach(irq => {
-        plotData.push(cpuCore.irq[irq])
+        if (cpuCore.irq[irq].canRender === true) {
+            plotData.push(cpuCore.irq[irq])
+        }
     })
 })
 
