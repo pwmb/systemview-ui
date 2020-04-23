@@ -21,25 +21,32 @@ const IGNORE_RENDER_SYS_STREAM_LIST = [
 
 const IGNORE_RENDER_SYS_STREAM_ID_LIST = IGNORE_RENDER_SYS_STREAM_LIST.map(name => mcore.streams.system[name])
 
+let range = {
+    xmin: Number.MAX_SAFE_INTEGER,
+    xmax: Number.MIN_SAFE_INTEGER
+}
+
 const layout = {
     height: 700,
     hovermode: 'closest',
     showlegend: false,
     dragmode: "pan",
-    shapes: [{
-        // type: 'line',
-        // xref: "x",
-        // yref: "y2",
-        // x0: 0.002789875,
-        // y0: "IDLE1",
-        // x1: 0.002789875,
-        // y1: "IRQ: SysTick",
-        // opacity: 0.5,
-        // line: {
-        //     color: 'blue',
-        //     width: 0.5
+    shapes: [
+        // {
+        //     type: 'line',
+        //     xref: "x",
+        //     yref: "y2",
+        //     x0: 0.002789875,
+        //     y0: "IDLE1",
+        //     x1: 0.002789875,
+        //     y1: "IRQ: SysTick",
+        //     opacity: 0.5,
+        //     line: {
+        //         color: 'blue',
+        //         width: 0.5
+        //     }
         // }
-    }],
+    ],
     xaxis: {
         range: [0, 0.01],
         // rangeslider: { range: [range.xmin, range.xmax] },
@@ -85,11 +92,6 @@ rendering.addEventListener("click", () => {
     }, 0);
 })
 
-let range = {
-    xmin: Number.MAX_SAFE_INTEGER,
-    xmax: Number.MIN_SAFE_INTEGER
-}
-
 mcore.events.forEach(evt => {
     if (!lookupTable[evt.core_id]) {
         lookupTable[evt.core_id] = {
@@ -98,16 +100,16 @@ mcore.events.forEach(evt => {
             lastEvent: null
         };
     }
-    if (evt.ts >= range.xmax) {
-        range.xmax = evt.ts;
-    }
-    if (evt.ts <= range.xmin) {
-        range.xmin = evt.ts;
-    }
 
     let canRender = true;
     if (IGNORE_RENDER_SYS_STREAM_ID_LIST.includes(evt.id)) {
         canRender = false;
+    }
+    if (canRender && evt.ts >= range.xmax) {
+        range.xmax = evt.ts;
+    }
+    if (canRender && evt.ts <= range.xmin) {
+        range.xmin = evt.ts;
     }
 
     if (evt.in_irq === true && !lookupTable[evt.core_id].irq.hasOwnProperty(evt.ctx_name)) {
@@ -160,5 +162,7 @@ Object.keys(lookupTable).forEach(coreId => {
     })
 })
 
+
+layout.xaxis.range = [range.xmin, 0.01]
 
 Plotly.plot(plot, plotData, layout, { scrollZoom: true })
