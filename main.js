@@ -58,6 +58,7 @@ const layout = {
     },
     yaxis: {
         title: "Core 0",
+        // domain: [0.5, 1],
         fixedrange: true,
         showgrid: false,
         zeroline: false,
@@ -65,6 +66,7 @@ const layout = {
     },
     yaxis2: {
         title: "Core 1",
+        // domain: [0, 0.48],
         fixedrange: true,
         showgrid: false,
         zeroline: false,
@@ -142,9 +144,17 @@ mcore.events.forEach((evt, index) => {
     }
     if (lookupTable[evt.core_id].lastEvent !== null) {
         const previousEvt = lookupTable[evt.core_id].lastEvent;
-        data.x.push(previousEvt.ts, evt.ts, null);
-        data.y.push(data.name, data.name, data.name);
+        const previousData = previousEvt.in_irq === true ? lookupTable[evt.core_id].irq[previousEvt.ctx_name] : lookupTable[evt.core_id].ctx[previousEvt.ctx_name]
+
+        //stop for last event
+        previousData.x.push(evt.ts, null);
+        previousData.y.push(previousData.name, previousData.name);
     }
+    //start point for current evt
+    data.x.push(evt.ts);
+    data.y.push(data.name);
+
+    //store current event for a core as last event for the same core
     lookupTable[evt.core_id].lastEvent = evt;
 })
 
