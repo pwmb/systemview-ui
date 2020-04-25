@@ -79,7 +79,7 @@ uploadFile.addEventListener("change", (evt: HTMLInputEvent) => {
       const mcore = JSON.parse(ev.target.result as string);
       const plotData = drawPlot(mcore);
       //@ts-ignore
-      Plotly.react(plot, plotData, layout);
+      Plotly.react(plot, plotData, layout, { scrollZoom: true });
     } catch (error) {
       alert("Invalid JSON File" + error);
     }
