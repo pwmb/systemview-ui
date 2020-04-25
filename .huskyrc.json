@@ -1,5 +1,5 @@
 {
   "hooks": {
-    "pre-commit": "pretty-quick --staged && yarn compile"
+    "pre-commit": "yarn compile && git add dist/ && pretty-quick --staged"
   }
 }
