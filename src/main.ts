@@ -108,7 +108,7 @@ function drawPlot(mcore: any) {
 }
 
 (async function () {
-  fetch("/mcore.json")
+  fetch("mcore.json")
     .then((response) => {
       return response.json();
     })
