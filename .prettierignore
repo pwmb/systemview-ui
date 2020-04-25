@@ -1,0 +1,11 @@
+#files
+*.log
+.prettierignore
+.gitignore
+yarn.lock
+
+#dirs
+.vscode
+out/
+dist/
+node_modules/

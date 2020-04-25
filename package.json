@@ -1,0 +1,25 @@
+{
+  "name": "sysview_trace_ui",
+  "version": "1.0.0",
+  "description": "UI for System View Tracing for ESP32 and ESP32-S2",
+  "repository": "https://github.com/SoumeshBanerjee/systemview-ui.git",
+  "author": "Soumesh Banerjee <soumeshbanerjee@live.com>",
+  "license": "MIT",
+  "private": true,
+  "devDependencies": {
+    "husky": "^4.2.5",
+    "prettier": "^2.0.5",
+    "pretty-quick": "^2.0.1",
+    "ts-loader": "^7.0.1",
+    "tslint": "^6.1.1",
+    "tslint-config-prettier": "^1.18.0",
+    "tslint-plugin-prettier": "^2.3.0",
+    "typescript": "^3.8.3",
+    "webpack": "^4.43.0",
+    "webpack-cli": "^3.3.11"
+  },
+  "dependencies": {},
+  "scripts": {
+    "compile": "yarn webpack --mode=production"
+  }
+}
