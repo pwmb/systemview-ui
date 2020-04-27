@@ -36,6 +36,9 @@ export function calculateAndInjectDataPoints(
 ): { xmin: number; xmax: number } {
   function stopLastEventBar(coreId: number, stopTimeStamp: number) {
     const previousEvt = lookupTable[coreId].lastEvent;
+    if (!previousEvt) {
+      return;
+    }
     const previousData =
       previousEvt.in_irq === true
         ? lookupTable[coreId].irq[previousEvt.ctx_name]
@@ -95,9 +98,9 @@ export function calculateAndInjectDataPoints(
       data.y = [];
       data.x = [];
     }
-    if (lookupTable[evt.core_id].lastEvent !== null) {
-      stopLastEventBar(evt.core_id, evt.ts);
-    }
+    //stop the last event bar (if exists)
+    stopLastEventBar(evt.core_id, evt.ts);
+
     //start point for current evt
     data.x.push(evt.ts);
     data.y.push(data.name);
