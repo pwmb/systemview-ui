@@ -97,7 +97,8 @@ function drawPlot(mcore: any) {
   const range = calculateAndInjectDataPoints(
     mcore.events as SysViewEvent[],
     lookupTable,
-    IGNORE_RENDER_SYS_STREAM_ID_LIST
+    IGNORE_RENDER_SYS_STREAM_ID_LIST,
+    mcore.streams.system["SYS_OVERFLOW"]
   );
 
   layout.xaxis.range = [range.xmin, 0.01];

@@ -31,15 +31,43 @@ export function generateLookupTable(events: SysViewEvent[]): LookUpTable {
 export function calculateAndInjectDataPoints(
   events: SysViewEvent[],
   lookupTable: LookUpTable,
-  ignoreRenderIds: Set<number>
+  ignoreRenderIds: Set<number>,
+  sysOverflowId: number
 ): { xmin: number; xmax: number } {
+  function stopLastEventBar(coreId: number, stopTimeStamp: number) {
+    const previousEvt = lookupTable[coreId].lastEvent;
+    const previousData =
+      previousEvt.in_irq === true
+        ? lookupTable[coreId].irq[previousEvt.ctx_name]
+        : lookupTable[coreId].ctx[previousEvt.ctx_name];
+
+    //stop for last event
+    previousData.x.push(stopTimeStamp, null);
+    previousData.y.push(previousData.name, null);
+  }
+
   const range = {
     xmin: Number.POSITIVE_INFINITY,
     xmax: Number.NEGATIVE_INFINITY,
   };
 
   events.forEach((evt: SysViewEvent) => {
+    //Ignore the list of ignored System Events
     if (ignoreRenderIds.has(evt.id)) {
+      return;
+    }
+    //SYS_OVERFLOW event halt all the running tasks and draw void rect
+    if (evt.id === sysOverflowId) {
+      console.log("Halt event arrived", evt);
+      //halts both the tasks running on both the core
+      stopLastEventBar(0, evt.ts);
+      stopLastEventBar(1, evt.ts);
+
+      //set previous event as null for both core
+      lookupTable[0].lastEvent = null;
+      lookupTable[1].lastEvent = null;
+
+      //ignore everything else and continue like a fresh start
       return;
     }
     if (evt.ts >= range.xmax) {
@@ -68,15 +96,7 @@ export function calculateAndInjectDataPoints(
       data.x = [];
     }
     if (lookupTable[evt.core_id].lastEvent !== null) {
-      const previousEvt = lookupTable[evt.core_id].lastEvent;
-      const previousData =
-        previousEvt.in_irq === true
-          ? lookupTable[evt.core_id].irq[previousEvt.ctx_name]
-          : lookupTable[evt.core_id].ctx[previousEvt.ctx_name];
-
-      //stop for last event
-      previousData.x.push(evt.ts, null);
-      previousData.y.push(previousData.name, previousData.name);
+      stopLastEventBar(evt.core_id, evt.ts);
     }
     //start point for current evt
     data.x.push(evt.ts);
