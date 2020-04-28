@@ -11,24 +11,8 @@ const uploadFile = document.getElementById("file");
 const layout = {
   height: 700,
   hovermode: "closest",
-  showlegend: false,
+  showlegend: true,
   dragmode: "pan",
-  shapes: [
-    // {
-    //     type: 'line',
-    //     xref: "x",
-    //     yref: "y2",
-    //     x0: 0.002789875,
-    //     y0: "IDLE1",
-    //     x1: 0.002789875,
-    //     y1: "IRQ: SysTick",
-    //     opacity: 0.5,
-    //     line: {
-    //         color: 'blue',
-    //         width: 0.5
-    //     }
-    // }
-  ],
   xaxis: {
     range: [0, 0.01],
     // rangeslider: { range: [range.xmin, range.xmax] },
@@ -79,7 +63,11 @@ uploadFile.addEventListener("change", (evt: HTMLInputEvent) => {
       const mcore = JSON.parse(ev.target.result as string);
       const plotData = drawPlot(mcore);
       //@ts-ignore
-      Plotly.react(plot, plotData, layout, { scrollZoom: true });
+      Plotly.react(plot, plotData, layout, {
+        displaylogo: false,
+        scrollZoom: true,
+        responsive: true,
+      });
     } catch (error) {
       alert("Invalid JSON File" + error);
     }
@@ -117,7 +105,11 @@ function drawPlot(mcore: any) {
       const plotData = drawPlot(mcore);
 
       //@ts-ignore
-      Plotly.newPlot(plot, plotData, layout, { scrollZoom: true });
+      Plotly.newPlot(plot, plotData, layout, {
+        displaylogo: false,
+        scrollZoom: true,
+        responsive: true,
+      });
     })
     .catch((error) => {
       console.error(error);

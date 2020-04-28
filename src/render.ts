@@ -9,6 +9,22 @@ export function generateLookupTable(events: SysViewEvent[]): LookUpTable {
         irq: {},
         ctx: {},
         lastEvent: null,
+        contextSwitch: {
+          name: "context-switch",
+          line: {
+            color: "blue",
+            width: 0.5,
+          },
+          mode: "lines",
+          opacity: 0.5,
+          type: "scatterql",
+          x: [],
+          y: [],
+          xaxis: "x",
+          yaxis: evt.core_id === 1 ? "y2" : "y",
+          visible: "legendonly",
+          hoverinfo: "skip",
+        },
       };
     }
 
@@ -34,6 +50,19 @@ export function calculateAndInjectDataPoints(
   ignoreRenderIds: Set<number>,
   sysOverflowId: number
 ): { xmin: number; xmax: number } {
+  function drawContextSwitch(
+    coreId: number,
+    previousYAxis: any,
+    currentYAxis: any,
+    commonXAxis: any
+  ) {
+    if (previousYAxis === currentYAxis) {
+      return;
+    }
+    const contextSwitch = lookupTable[coreId].contextSwitch;
+    contextSwitch.x.push(commonXAxis, commonXAxis, null);
+    contextSwitch.y.push(previousYAxis, currentYAxis, null);
+  }
   function stopLastEventBar(coreId: number, stopTimeStamp: number) {
     const previousEvt = lookupTable[coreId].lastEvent;
     if (!previousEvt) {
@@ -101,6 +130,16 @@ export function calculateAndInjectDataPoints(
     //stop the last event bar (if exists)
     stopLastEventBar(evt.core_id, evt.ts);
 
+    //draw context switch
+    const previousEvt = lookupTable[evt.core_id].lastEvent;
+    if (previousEvt) {
+      const previousData =
+        previousEvt.in_irq === true
+          ? lookupTable[evt.core_id].irq[previousEvt.ctx_name]
+          : lookupTable[evt.core_id].ctx[previousEvt.ctx_name];
+      drawContextSwitch(evt.core_id, previousData.name, data.name, evt.ts);
+    }
+
     //start point for current evt
     data.x.push(evt.ts);
     data.y.push(data.name);
@@ -121,6 +160,7 @@ export function populatePlotData(lookupTable: LookUpTable): Array<any> {
     Object.keys(cpuCore.irq).forEach((irq) => {
       plotData.push(cpuCore.irq[irq]);
     });
+    plotData.push(cpuCore.contextSwitch);
   });
   return plotData;
 }

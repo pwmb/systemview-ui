@@ -25,6 +25,19 @@ export interface LookUpTable {
     irq: SysViewEventObjects;
     ctx: SysViewEventObjects;
     lastEvent: SysViewEvent;
+    contextSwitch: {
+      line: { width: 0.5; color: "blue" };
+      opacity: 0.5;
+      type: "scatterql";
+      x: Array<number>;
+      y: Array<string>;
+      xaxis?: "x";
+      yaxis?: "y" | "y2";
+      mode: "lines";
+      name: "context-switch";
+      visible: "legendonly";
+      hoverinfo: "skip";
+    };
   };
 }
 export const IGNORE_RENDER_SYS_STREAM_LIST = [
