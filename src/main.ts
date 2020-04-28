@@ -93,6 +93,9 @@ function drawPlot(mcore: any) {
 
   const plotData = populatePlotData(lookupTable);
 
+  console.log("Plot data");
+  console.dir(plotData);
+
   return plotData;
 }
 

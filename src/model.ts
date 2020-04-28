@@ -35,7 +35,7 @@ export interface LookUpTable {
       yaxis?: "y" | "y2";
       mode: "lines";
       name: "context-switch";
-      visible: "legendonly";
+      visible?: "legendonly";
       hoverinfo: "skip";
     };
   };

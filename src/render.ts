@@ -22,7 +22,7 @@ export function generateLookupTable(events: SysViewEvent[]): LookUpTable {
           y: [],
           xaxis: "x",
           yaxis: evt.core_id === 1 ? "y2" : "y",
-          visible: "legendonly",
+          // visible: "legendonly",
           hoverinfo: "skip",
         },
       };
