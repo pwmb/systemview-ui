@@ -41,7 +41,6 @@ export interface LookUpTable {
   };
 }
 export const IGNORE_RENDER_SYS_STREAM_LIST = [
-  "SYS_IDLE",
   "SYS_INIT",
   "SYS_MODULEDESC",
   "SYS_NAME_RESOURCE",
