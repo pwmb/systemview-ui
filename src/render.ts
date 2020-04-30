@@ -117,7 +117,7 @@ export function calculateAndInjectDataPoints(
     if (!data.type) {
       data.type = "scattergl";
       data.mode = "lines";
-      data.opacity = 0.9;
+      data.opacity = 1;
       data.line = { width: 20 };
       data.name = evt.in_irq === true ? `IRQ: ${evt.ctx_name}` : evt.ctx_name;
       if (evt.core_id === 1) {
@@ -150,30 +150,29 @@ export function calculateAndInjectDataPoints(
   return range;
 }
 
-function addColorToEvent(trace: SysViewEvent, color: string) {
-  if (trace && trace.mode === "lines") {
-    trace.line.color = color;
+function colorPlot(lookupTable: LookUpTable): Map<string, string> {
+  //@ts-ignore
+  const colorGenerator = Plotly.d3.scale.category20();
+  const colorMap = new Map();
+  let i = 0;
+  function applyColorFor(obj: Object) {
+    Object.keys(obj).forEach((v) => {
+      if (!colorMap.has(v)) {
+        if (v === "scheduler") {
+          colorMap.set(v, "#000000");
+        } else if (v.match(/^IDLE[0-9]*/)) {
+          colorMap.set(v, "#ffd4ff");
+        } else {
+          colorMap.set(v, colorGenerator(i++));
+        }
+      }
+    });
   }
-}
-
-function findAndColorizeTasksInAllCores(
-  taskName: string,
-  color: string,
-  lookupTable: LookUpTable,
-  coreId: any
-) {
-  let colored = false;
-  Object.keys(lookupTable).forEach((core_id) => {
-    if (core_id === coreId) {
-      return;
-    }
-    const task = lookupTable[core_id].ctx[taskName];
-    if (task && task.mode === "lines") {
-      task.line.color = color;
-      colored = true;
-    }
+  Object.keys(lookupTable).forEach((coreId) => {
+    applyColorFor(lookupTable[coreId].ctx);
+    applyColorFor(lookupTable[coreId].irq);
   });
-  return colored;
+  return colorMap;
 }
 
 export function populatePlotData(lookupTable: LookUpTable): Array<any> {
@@ -192,6 +191,7 @@ export function populatePlotData(lookupTable: LookUpTable): Array<any> {
    * IDLE
    */
   const plotData = [];
+  const colorPlotMap = colorPlot(lookupTable);
   Object.keys(lookupTable).forEach((coreId) => {
     const cpuCore = lookupTable[coreId];
 
@@ -200,8 +200,6 @@ export function populatePlotData(lookupTable: LookUpTable): Array<any> {
 
     contextNames.forEach((name) => {
       if (name.match(/^IDLE[0-9]*/)) {
-        const eventTrace = cpuCore.ctx[name];
-        addColorToEvent(eventTrace, "#c2ffcc");
         taskPriorityList.add(name);
         contextNames.delete(name);
       }
@@ -209,32 +207,34 @@ export function populatePlotData(lookupTable: LookUpTable): Array<any> {
 
     contextNames.forEach((name) => {
       if (name !== "scheduler") {
-        const color = `#${((Math.random() * 16777216) | 0).toString(16)}`;
-        if (
-          findAndColorizeTasksInAllCores(name, color, lookupTable, coreId) &&
-          cpuCore.ctx[name].mode === "lines"
-        ) {
-          cpuCore.ctx[name].line.color = color;
-        }
         taskPriorityList.add(name);
         contextNames.delete(name);
       }
     });
 
     if (contextNames.has("scheduler")) {
-      const eventTrace = cpuCore.ctx["scheduler"];
-      addColorToEvent(eventTrace, "#444444");
       taskPriorityList.add("scheduler");
       contextNames.delete("scheduler");
     }
 
     taskPriorityList.forEach((name) => {
-      plotData.push(cpuCore.ctx[name]);
+      const color = colorPlotMap.get(name);
+      const evt = cpuCore.ctx[name];
+      if (color && evt.mode === "lines") {
+        evt.line.color = color;
+      }
+      plotData.push(evt);
     });
 
     Object.keys(cpuCore.irq).forEach((irq) => {
-      plotData.push(cpuCore.irq[irq]);
+      const color = colorPlotMap.get(irq);
+      const evt = cpuCore.irq[irq];
+      if (color && evt.mode === "lines") {
+        evt.line.color = color;
+      }
+      plotData.push(evt);
     });
+
     plotData.push(cpuCore.contextSwitch);
   });
   return plotData;
