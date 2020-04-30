@@ -223,7 +223,7 @@ export function populatePlotData(lookupTable: LookUpTable): Array<any> {
 
     if (contextNames.has("scheduler")) {
       const eventTrace = cpuCore.ctx["scheduler"];
-      addColorToEvent(eventTrace, "#c2ffcc");
+      addColorToEvent(eventTrace, "#444444");
       taskPriorityList.add("scheduler");
       contextNames.delete("scheduler");
     }
