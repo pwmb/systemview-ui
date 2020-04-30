@@ -9,7 +9,7 @@ export interface SysViewEvent {
   type?: string;
   mode?: string;
   opacity?: number;
-  line?: { width?: number };
+  line?: { width?: number; color?: string };
   name?: string;
   yaxis?: string;
   xaxis?: string;
@@ -26,7 +26,7 @@ export interface LookUpTable {
     ctx: SysViewEventObjects;
     lastEvent: SysViewEvent;
     contextSwitch: {
-      line: { width: 0.5; color: "blue" };
+      line: { width: number; color: string };
       opacity: 0.5;
       type: "scatterql";
       x: Array<number>;

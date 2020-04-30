@@ -150,13 +150,88 @@ export function calculateAndInjectDataPoints(
   return range;
 }
 
+function addColorToEvent(trace: SysViewEvent, color: string) {
+  if (trace && trace.mode === "lines") {
+    trace.line.color = color;
+  }
+}
+
+function findAndColorizeTasksInAllCores(
+  taskName: string,
+  color: string,
+  lookupTable: LookUpTable,
+  coreId: any
+) {
+  let colored = false;
+  Object.keys(lookupTable).forEach((core_id) => {
+    if (core_id === coreId) {
+      return;
+    }
+    const task = lookupTable[core_id].ctx[taskName];
+    if (task && task.mode === "lines") {
+      task.line.color = color;
+      colored = true;
+    }
+  });
+  return colored;
+}
+
 export function populatePlotData(lookupTable: LookUpTable): Array<any> {
+  /**
+   * Plot Population Strategy
+   * IRQ1
+   * ...
+   * IRQN
+   * -----------------------------
+   * Scheduler
+   * -----------------------------
+   * Tasks1
+   * ...
+   * TasksN
+   * -----------------------------
+   * IDLE
+   */
   const plotData = [];
   Object.keys(lookupTable).forEach((coreId) => {
     const cpuCore = lookupTable[coreId];
-    Object.keys(cpuCore.ctx).forEach((ctx) => {
-      plotData.push(cpuCore.ctx[ctx]);
+
+    const taskPriorityList = new Set<string>();
+    const contextNames = new Set<string>(Object.keys(cpuCore.ctx));
+
+    contextNames.forEach((name) => {
+      if (name.match(/^IDLE[0-9]*/)) {
+        const eventTrace = cpuCore.ctx[name];
+        addColorToEvent(eventTrace, "#c2ffcc");
+        taskPriorityList.add(name);
+        contextNames.delete(name);
+      }
     });
+
+    contextNames.forEach((name) => {
+      if (name !== "scheduler") {
+        const color = `#${((Math.random() * 16777216) | 0).toString(16)}`;
+        if (
+          findAndColorizeTasksInAllCores(name, color, lookupTable, coreId) &&
+          cpuCore.ctx[name].mode === "lines"
+        ) {
+          cpuCore.ctx[name].line.color = color;
+        }
+        taskPriorityList.add(name);
+        contextNames.delete(name);
+      }
+    });
+
+    if (contextNames.has("scheduler")) {
+      const eventTrace = cpuCore.ctx["scheduler"];
+      addColorToEvent(eventTrace, "#c2ffcc");
+      taskPriorityList.add("scheduler");
+      contextNames.delete("scheduler");
+    }
+
+    taskPriorityList.forEach((name) => {
+      plotData.push(cpuCore.ctx[name]);
+    });
+
     Object.keys(cpuCore.irq).forEach((irq) => {
       plotData.push(cpuCore.irq[irq]);
     });
