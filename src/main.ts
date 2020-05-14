@@ -4,12 +4,14 @@ import {
   calculateAndInjectDataPoints,
   populatePlotData,
 } from "./render";
+import { resize } from "./interact";
 
 const plot = document.getElementById("plot");
 const uploadFile = document.getElementById("file");
 
+resize(plot);
+
 const layout = {
-  height: 700,
   hovermode: "closest",
   showlegend: true,
   dragmode: "pan",
@@ -24,7 +26,7 @@ const layout = {
   },
   yaxis: {
     title: "Core 0",
-    // domain: [0.5, 1],
+    domain: [0.5, 1],
     fixedrange: true,
     showgrid: false,
     zeroline: false,
@@ -32,7 +34,7 @@ const layout = {
   },
   yaxis2: {
     title: "Core 1",
-    // domain: [0, 0.48],
+    domain: [0, 0.48],
     fixedrange: true,
     showgrid: false,
     zeroline: false,
