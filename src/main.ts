@@ -102,7 +102,7 @@ function drawPlot(mcore: any) {
 }
 
 (async function () {
-  fetch("https://soumeshbanerjee.github.io/systemview-ui/mcore.json")
+  fetch("https://pwmb.github.io/systemview-ui/mcore.json")
     .then((response) => {
       return response.json();
     })
