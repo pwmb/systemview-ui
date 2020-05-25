@@ -8,14 +8,51 @@
     <script src="https://cdn.jsdelivr.net/npm/interactjs/dist/interact.min.js"></script>
     <script src="dist/bundle.js" defer></script>
     <style>
+      * {
+        font-family: sans-serif;
+      }
+
       #plot {
         box-sizing: border-box;
         touch-action: none;
+      }
+
+      thead,
+      tbody {
+        display: block;
+      }
+
+      thead {
+        font-size: 13px;
+      }
+
+      tbody {
+        font-size: 12px;
+        height: 100px;
+        /* Just for the demo          */
+        overflow-y: auto;
+        /* Trigger vertical scroll    */
+        overflow-x: hidden;
+        /* Hide the horizontal scroll */
       }
     </style>
   </head>
 
   <body>
+    <div>
+      <table>
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Timestamp</th>
+            <th>Core ID</th>
+            <th>Context</th>
+            <th>Description</th>
+          </tr>
+        </thead>
+        <tbody id="event_table_data"></tbody>
+      </table>
+    </div>
     <div id="plot"></div>
 
     <div>

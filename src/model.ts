@@ -1,10 +1,46 @@
-export interface SysViewEvent {
+export interface eventsParams {
+  desc?: string;
+  cpu_freq?: number;
+  id_shift?: number;
+  ram_base?: number;
+  sys_freq?: number;
+  base?: number;
+  sz?: number;
+  tid?: number;
+  unused?: number;
+
+  time?: number;
+  name?: string;
+  prio?: number;
+
+  mod_cnt?: number;
+  irq_num?: number;
+  pvItemToQueue?: number;
+  xCopyPosition?: number;
+  xQueue?: number;
+  xTicksToWait?: number;
+  xTicksToDelay?: number;
+  cause?: number;
+  evt_off?: number;
+  mod_id?: number;
+  ucQueueType?: number;
+  uxItemSize?: number;
+  uxQueueLength?: number;
+  pvBuffer?: number;
+  xJustPeek?: number;
+  xTaskToDelete?: number;
+}
+
+export interface events {
   ctx_name?: string;
   id?: number;
   core_id?: number;
   ts?: number;
   in_irq?: boolean;
+  params?: eventsParams;
+}
 
+export interface SysViewEvent extends events {
   // plot related meta info
   type?: string;
   mode?: string;

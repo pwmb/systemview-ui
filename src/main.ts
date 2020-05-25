@@ -1,4 +1,4 @@
-import { IGNORE_RENDER_SYS_STREAM_LIST, SysViewEvent } from "./model";
+import { IGNORE_RENDER_SYS_STREAM_LIST, SysViewEvent, events } from "./model";
 import {
   generateLookupTable,
   calculateAndInjectDataPoints,
@@ -8,6 +8,7 @@ import { resize } from "./interact";
 
 const plot = document.getElementById("plot");
 const uploadFile = document.getElementById("file");
+const event_table = document.getElementById("event_table_data");
 
 resize(plot);
 
@@ -95,10 +96,38 @@ function drawPlot(mcore: any) {
 
   const plotData = populatePlotData(lookupTable);
 
-  console.log("Plot data");
-  console.dir(plotData);
-
   return plotData;
+}
+
+function generateEventTableTR(
+  event: events,
+  index: number
+): HTMLTableRowElement {
+  function createTDWithData(data: string): HTMLTableDataCellElement {
+    const td = document.createElement("td");
+    td.innerText = data;
+    return td;
+  }
+  const tr = document.createElement("tr");
+
+  tr.appendChild(createTDWithData(index.toString()));
+  tr.appendChild(createTDWithData(event.ts.toString()));
+  tr.appendChild(createTDWithData(event.core_id.toString()));
+  tr.appendChild(createTDWithData(event.ctx_name.toString()));
+
+  if (event.params && event.params.desc) {
+    tr.appendChild(createTDWithData(event.params.desc));
+  }
+
+  return tr;
+}
+
+function fillEventTable(mcore: any) {
+  const holder = document.createDocumentFragment();
+  mcore.events.forEach((event: events, index: number) =>
+    holder.appendChild(generateEventTableTR(event, index))
+  );
+  event_table.appendChild(holder);
 }
 
 (async function () {
@@ -107,6 +136,7 @@ function drawPlot(mcore: any) {
       return response.json();
     })
     .then((mcore) => {
+      fillEventTable(mcore);
       const plotData = drawPlot(mcore);
 
       //@ts-ignore
