@@ -63,7 +63,7 @@ export interface LookUpTable {
     lastEvent: SysViewEvent;
     contextSwitch: {
       line: { width: number; color: string };
-      opacity: 0.5;
+      opacity: number;
       type: "scatterql";
       x: Array<number>;
       y: Array<string>;

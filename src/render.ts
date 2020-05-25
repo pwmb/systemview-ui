@@ -12,11 +12,11 @@ export function generateLookupTable(events: SysViewEvent[]): LookUpTable {
         contextSwitch: {
           name: "context-switch",
           line: {
-            color: "blue",
+            color: "#a3ffd7",
             width: 0.5,
           },
           mode: "lines",
-          opacity: 0.5,
+          opacity: 0.7,
           type: "scatterql",
           x: [],
           y: [],
@@ -159,7 +159,7 @@ function colorPlot(lookupTable: LookUpTable): Map<string, string> {
     Object.keys(obj).forEach((v) => {
       if (!colorMap.has(v)) {
         if (v === "scheduler") {
-          colorMap.set(v, "#000000");
+          colorMap.set(v, "#555555");
         } else if (v.match(/^IDLE[0-9]*/)) {
           colorMap.set(v, "#ffd4ff");
         } else {

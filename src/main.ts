@@ -13,8 +13,19 @@ const event_table = document.getElementById("event_table_data");
 resize(plot);
 
 const layout = {
+  margin: {
+    t: 30,
+    b: 30,
+    r: 20,
+  },
+  paper_bgcolor: "red",
+  plot_bgcolor: "#000000",
+  font: {
+    color: "#ffffff",
+    size: 8,
+  },
   hovermode: "closest",
-  showlegend: true,
+  showlegend: false,
   dragmode: "pan",
   xaxis: {
     range: [0, 0.01],
@@ -35,7 +46,7 @@ const layout = {
   },
   yaxis2: {
     title: "Core 1",
-    domain: [0, 0.48],
+    domain: [0, 0.49],
     fixedrange: true,
     showgrid: false,
     zeroline: false,
